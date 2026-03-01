@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invenza'26 — AIML Club, GCET</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #030811;
+    --surface: #0a1628;
+    --cyan: #00f5ff;
+    --orange: #ff6b35;
+    --gold: #ffd700;
+    --white: #f0f4ff;
+    --muted: #4a5a7a;
+    --grid: rgba(0,245,255,0.04);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--cyan);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: normal;
+    transition: transform 0.1s;
+  }
+  .cursor-trail {
+    width: 32px; height: 32px;
+    border: 1px solid var(--cyan);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.4;
+    transition: all 0.15s ease;
+  }
+
+  /* Grid bg */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; width: 100%;
+    padding: 1.2rem 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 100;
+    background: linear-gradient(to bottom, rgba(3,8,17,0.95), transparent);
+    backdrop-filter: blur(4px);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-shadow: 0 0 30px rgba(0,245,255,0.5);
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    position: relative;
+    padding: 2rem;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,245,255,0.12) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; }
+  }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 18vw, 14rem);
+    line-height: 0.9;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--white) 0%, var(--cyan) 50%, var(--white) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-year {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 6vw, 5rem);
+    color: var(--orange);
+    letter-spacing: 8px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .hero-sub {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    max-width: 500px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
+  }
+
+  .hero-date-badge {
+    margin-top: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 2rem;
+    border: 1px solid rgba(0,245,255,0.3);
+    border-radius: 2px;
+    background: rgba(0,245,255,0.05);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    opacity: 0;
+    animation: fadeUp 0.8s 1s forwards;
+  }
+
+  .hero-date-badge .sep {
+    width: 1px; height: 20px;
+    background: rgba(0,245,255,0.4);
+  }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 2rem; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.4rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 1.4s forwards;
+  }
+  .scroll-cue span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--cyan), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0% { opacity: 1; transform: scaleY(1); transform-origin: top; }
+    100% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SECTION COMMON */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 6rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 30px; height: 1px;
+    background: var(--cyan);
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 6vw, 5rem);
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 3rem;
+  }
+
+  /* ABOUT */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  .about-text {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #8899bb;
+  }
+  .about-text strong { color: var(--white); }
+  .about-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .stat-card {
+    padding: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-top: 2px solid var(--cyan);
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,245,255,0.05), transparent);
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--cyan);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* EVENTS */
+  .events-section {
+    max-width: 1200px;
+  }
+
+  .events-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .event-card {
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--surface);
+    padding: 3rem;
+    overflow: hidden;
+    transition: transform 0.4s ease, border-color 0.4s;
+    cursor: default;
+  }
+
+  .event-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .event-card.ideathon::before { background: var(--cyan); }
+  .event-card.treasure::before { background: var(--orange); }
+
+  .event-card::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -80px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    transition: transform 0.6s ease;
+  }
+
+  .event-card.ideathon::after {
+    background: radial-gradient(circle, rgba(0,245,255,0.08), transparent 70%);
+  }
+  .event-card.treasure::after {
+    background: radial-gradient(circle, rgba(255,107,53,0.08), transparent 70%);
+  }
+
+  .event-card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.15); }
+  .event-card:hover::after { transform: scale(1.5); }
+
+  .event-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 6rem;
+    line-height: 1;
+    opacity: 0.06;
+    position: absolute;
+    top: 1rem; right: 1.5rem;
+    color: var(--white);
+  }
+
+  .event-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+  }
+  .ideathon .event-tag {
+    color: var(--cyan);
+    border: 1px solid rgba(0,245,255,0.3);
+    background: rgba(0,245,255,0.06);
+  }
+  .treasure .event-tag {
+    color: var(--orange);
+    border: 1px solid rgba(255,107,53,0.3);
+    background: rgba(255,107,53,0.06);
+  }
+
+  .event-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    letter-spacing: 2px;
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+  }
+
+  .event-desc {
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: #6a7a9a;
+    margin-bottom: 2rem;
+  }
+
+  .event-highlights {
+    display: flex; flex-direction: column; gap: 0.7rem;
+  }
+
+  .highlight-item {
+    display: flex; align-items: center; gap: 0.8rem;
+    font-size: 0.82rem;
+    color: #8899bb;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .highlight-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .ideathon .highlight-dot { background: var(--cyan); }
+  .treasure .highlight-dot { background: var(--orange); }
+
+  /* SCHEDULE */
+  .schedule-wrap {
+    position: relative;
+  }
+
+  .timeline {
+    display: flex; flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 2rem;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--cyan), rgba(0,245,255,0.1));
+  }
+
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 2rem;
+    padding: 1.8rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    position: relative;
+    align-items: start;
+    transition: background 0.3s;
+  }
+
+  .timeline-item:hover { background: rgba(0,245,255,0.02); }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2rem; top: 2rem;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    background: var(--bg);
+    margin-left: -4px;
+  }
+
+  .timeline-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--cyan);
+    letter-spacing: 1px;
+    padding-top: 0.1rem;
+  }
+
+  .timeline-content h4 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .timeline-content p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .tl-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    padding: 0.2rem 0.6rem;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+  }
+  .tl-tag.cyan { background: rgba(0,245,255,0.1); color: var(--cyan); }
+  .tl-tag.orange { background: rgba(255,107,53,0.1); color: var(--orange); }
+  .tl-tag.gold { background: rgba(255,215,0,0.1); color: var(--gold); }
+
+  .timeline-item.day-header {
+    border-bottom: 1px solid rgba(0,245,255,0.15);
+    padding: 1.5rem 0 1rem;
+    margin-top: 2.5rem;
+  }
+  .timeline-item.day-header::before {
+    background: var(--cyan);
+    box-shadow: 0 0 12px var(--cyan);
+    width: 12px; height: 12px;
+    margin-left: -6px;
+    top: 1.8rem;
+  }
+  .timeline-item.day-header .timeline-time {
+    color: var(--white);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 3px;
+    line-height: 1.1;
+  }
+  .register-section {
+    text-align: center;
+    padding: 6rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .register-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,245,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .register-section .section-label {
+    justify-content: center;
+  }
+  .register-section .section-label::before { display: none; }
+
+  .register-cta {
+    margin-top: 2.5rem;
+    display: flex; justify-content: center; gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 1rem 2.5rem;
+    border: 1px solid;
+    transition: all 0.3s;
+    cursor: none;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: var(--cyan);
+    border-color: var(--cyan);
+    color: var(--bg);
+  }
+  .btn-primary:hover {
+    background: transparent;
+    color: var(--cyan);
+    box-shadow: 0 0 30px rgba(0,245,255,0.3);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+  .btn-secondary:hover {
+    background: var(--orange);
+    color: var(--bg);
+    box-shadow: 0 0 30px rgba(255,107,53,0.3);
+  }
+
+  .register-note {
+    margin-top: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* DIVIDER */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(0,245,255,0.2), transparent);
+    margin: 0 auto;
+    max-width: 1200px;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    position: relative; z-index: 1;
+  }
+  footer span { color: var(--cyan); }
+
+  /* PARTICLES */
+  .particles {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: var(--cyan);
+    border-radius: 50%;
+    opacity: 0;
+    animation: float linear infinite;
+  }
+  @keyframes float {
+    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(-100px) translateX(60px); opacity: 0; }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .about-grid { grid-template-columns: 1fr; }
+    .events-grid { grid-template-columns: 1fr; }
+    .timeline-item { grid-template-columns: 1fr; gap: 0.5rem; }
+    .event-card { padding: 2rem; }
+  }
+
+  /* glitch removed */
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- Particles -->
+<div class="particles" id="particles"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">INVENZA'26</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#schedule">Schedule</a></li>
+    <li><a href="#register">Register</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <p class="hero-eyebrow">AIML Club, GCET &nbsp;·&nbsp; 2025–2026</p>
+  <h1 class="hero-title">INVENZA</h1>
+  <div class="hero-year">'26</div>
+  <p class="hero-sub">A dynamic platform for creativity, collaboration, and competitive learning — where innovation meets adventure.</p>
+  <div class="hero-date-badge">
+    <span>5th — 7th March 2026</span>
+    <div class="sep"></div>
+    <span>9:00 AM — 3:00 PM</span>
+  </div>
+  <div class="scroll-cue">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">About the Event</div>
+  <h2 class="section-title">WHERE IDEAS <br>TAKE FLIGHT</h2>
+  <div class="about-grid">
+    <div>
+      <p class="about-text">
+        The <strong>AIML Club (2025–2026)</strong> of Geethanjali College of Engineering and Technology presents <strong>Invenza'26</strong> — a flagship multi-day event that brings together the brightest minds for two high-energy competitions: <strong>Ideathon</strong> and <strong>Treasure Hunt 2026</strong>.
+        <br><br>
+        Spanning three electrifying days, Invenza'26 challenges participants to think boldly, collaborate fearlessly, and compete strategically — all in a structured yet thrilling environment designed to spark innovation and camaraderie.
+      </p>
+    </div>
+    <div class="about-stats">
+      <div class="stat-card">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Days of Action</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">2</div>
+        <div class="stat-label">Competitions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Active Hrs Daily</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Ideas Possible</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- EVENTS -->
+<section id="events">
+  <div class="section-label">The Competitions</div>
+  <h2 class="section-title">TWO EVENTS.<br>ONE MISSION.</h2>
+  <div class="events-grid">
+
+    <!-- Ideathon -->
+    <div class="event-card ideathon">
+      <div class="event-number">01</div>
+      <div class="event-tag">Innovation Track</div>
+      <h3 class="event-name">IDEATHON<br>2026</h3>
+      <p class="event-desc">A structured innovation challenge where teams pitch their boldest concepts or working prototypes. From problem definition to solution design, every idea gets its moment in the spotlight — followed by critical Q&A and expert feedback.</p>
+      <div class="event-highlights">
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Concept & prototype pitching to panel judges</span>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Live Q&A sessions with industry experts</span>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Master classes on innovation frameworks</span>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Structured time slots per team</span>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Valedictory ceremony & award recognition</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Treasure Hunt -->
+    <div class="event-card treasure">
+      <div class="event-number">02</div>
+      <div class="event-tag">Adventure Track</div>
+      <h3 class="event-name">TREASURE<br>HUNT 2026</h3>
+      <p class="event-desc">A batch-wise, clue-based pursuit that demands teamwork, sharp logic, and raw speed. Navigate through a sequence of cryptic clues across campus, racing against rival batches to claim the final treasure first.</p>
+      <div class="event-highlights">
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Batch-wise team competition format</span>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Sequential clue-solving across campus</span>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Tests logic, speed & team coordination</span>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Progressive difficulty through stages</span>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-dot"></div>
+          <span>Race to the final hidden treasure</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCHEDULE -->
+<section id="schedule">
+  <div class="section-label">Program Flow</div>
+  <h2 class="section-title">EVENT SCHEDULE</h2>
+
+  <div class="schedule-wrap">
+    <div class="timeline">
+
+      <!-- DAY 1 HEADER -->
+      <div class="timeline-item day-header">
+        <div class="timeline-time">Day 1<br>March 5</div>
+        <div class="timeline-content">
+          <h4 style="color:var(--cyan); font-size:1.1rem; letter-spacing:2px;">THURSDAY, MARCH 5</h4>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">9:00 AM</div>
+        <div class="timeline-content">
+          <h4>Event Starts</h4>
+          <p>Welcome address, participant check-in, and orientation. Teams briefed on rules, judging criteria, and the day's agenda.</p>
+          <span class="tl-tag cyan">Opening</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">11:40 AM</div>
+        <div class="timeline-content">
+          <h4>Problem Statement Auction</h4>
+          <p>Teams bid on or receive their assigned problem statements. A strategic moment that sets the direction for each team's ideation journey.</p>
+          <span class="tl-tag cyan">Ideathon</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">12:40 PM</div>
+        <div class="timeline-content">
+          <h4>Lunch Break</h4>
+          <p>Rest, recharge, and discuss ideas with your team.</p>
+          <span class="tl-tag gold">Break</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">1:30 PM<br>– 3:00 PM</div>
+        <div class="timeline-content">
+          <h4>Masterclass — Prompt Engineering</h4>
+          <p>An expert-led deep dive into the art and science of <strong>Prompt Engineering</strong> — learn how to craft effective prompts, get the best out of AI models, and apply these skills to real-world problem solving and your Ideathon pitch.</p>
+          <span class="tl-tag gold">Learning</span>
+        </div>
+      </div>
+
+      <!-- DAY 2 HEADER -->
+      <div class="timeline-item day-header">
+        <div class="timeline-time">Day 2<br>March 6</div>
+        <div class="timeline-content">
+          <h4 style="color:var(--cyan); font-size:1.1rem; letter-spacing:2px;">FRIDAY, MARCH 6</h4>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">9:00 AM<br>– 10:00 AM</div>
+        <div class="timeline-content">
+          <h4>Pitch Preparation</h4>
+          <p>Final hour for teams to refine slides, rehearse delivery, and prepare Q&A responses before judging begins.</p>
+          <span class="tl-tag cyan">Prep</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">10:00 AM<br>– 12:40 PM</div>
+        <div class="timeline-content">
+          <h4>Pitching — Round 1</h4>
+          <p>Teams take the stage to pitch their ideas or prototypes to the panel. Each slot includes structured Q&A from judges.</p>
+          <span class="tl-tag cyan">Ideathon</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">12:40 PM</div>
+        <div class="timeline-content">
+          <h4>Lunch Break</h4>
+          <p>Midday break to recharge before the afternoon pitching round.</p>
+          <span class="tl-tag gold">Break</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">1:30 PM<br>– 3:00 PM</div>
+        <div class="timeline-content">
+          <h4>Pitching Continues</h4>
+          <p>Remaining teams complete their pitches. Judges deliberate and shortlist finalists for Day 3.</p>
+          <span class="tl-tag cyan">Ideathon</span>
+        </div>
+      </div>
+
+      <!-- DAY 3 HEADER -->
+      <div class="timeline-item day-header">
+        <div class="timeline-time">Day 3<br>March 7</div>
+        <div class="timeline-content">
+          <h4 style="color:var(--cyan); font-size:1.1rem; letter-spacing:2px;">SATURDAY, MARCH 7</h4>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">9:30 AM<br>– 11:00 AM</div>
+        <div class="timeline-content">
+          <h4>Final Pitching</h4>
+          <p>Top shortlisted teams deliver their final presentations before the full judging panel. Highest-stakes round of the event.</p>
+          <span class="tl-tag cyan">Finals</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">11:00 AM<br>– 12:40 PM</div>
+        <div class="timeline-content">
+          <h4>Valedictory Ceremony</h4>
+          <p>Opening of the closing ceremony — felicitation of participants, guest addresses, and recognition of outstanding contributions throughout Invenza'26.</p>
+          <span class="tl-tag gold">Valedictory</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">12:40 PM<br>– 1:00 PM</div>
+        <div class="timeline-content">
+          <h4>Lunch Break</h4>
+          <p>Short break before the results and prize distribution.</p>
+          <span class="tl-tag gold">Break</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-time">1:00 PM<br>– 3:00 PM</div>
+        <div class="timeline-content">
+          <h4>Results & Prize Distribution</h4>
+          <p>Winners announced, awards and certificates presented. Closing address by faculty and AIML Club leads. Invenza'26 signs off!</p>
+          <span class="tl-tag gold">Ends 3:00 PM</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REGISTER -->
+<section id="register">
+  <div class="register-section">
+    <div class="section-label">Join the Event</div>
+    <h2 class="section-title">READY TO<br>INNOVATE?</h2>
+    <p style="color: var(--muted); font-size: 0.95rem; max-width: 500px; margin: 0 auto; line-height: 1.8;">
+      Register now to participate in Ideathon 2026 or Treasure Hunt 2026. Open to all students of Geethanjali College of Engineering and Technology.
+    </p>
+    <div class="register-cta">
+      <a href="https://events.studenttribe.in/event/69a3fba12aa8ba78563c55a6" target="_blank" class="btn btn-primary">Register Now</a>
+    </div>
+    <p class="register-note">✦ Common registration for both Ideathon & Treasure Hunt &nbsp;·&nbsp; AIML Club · GCET · March 5–7, 2026</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <span>INVENZA'26</span> · AIML Club · Geethanjali College of Engineering & Technology</p>
+  <p style="margin-top: 0.5rem; font-size: 0.6rem; letter-spacing: 1px;">Crafted with innovation in mind.</p>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const trail = document.getElementById('cursorTrail');
+  let mx = 0, my = 0, tx = 0, ty = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 6 + 'px';
+    cursor.style.top = my - 6 + 'px';
+  });
+
+  function animateTrail() {
+    tx += (mx - tx) * 0.12;
+    ty += (my - ty) * 0.12;
+    trail.style.left = tx - 16 + 'px';
+    trail.style.top = ty - 16 + 'px';
+    requestAnimationFrame(animateTrail);
+  }
+  animateTrail();
+
+  // Particles
+  const pContainer = document.getElementById('particles');
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = 8 + Math.random() * 12 + 's';
+    p.style.animationDelay = Math.random() * 10 + 's';
+    p.style.opacity = 0;
+    if (i % 3 === 0) { p.style.background = '#ff6b35'; p.style.width = p.style.height = '1.5px'; }
+    pContainer.appendChild(p);
+  }
+
+  // Intersection Observer for subtle entrance
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.event-card, .timeline-item, .stat-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
